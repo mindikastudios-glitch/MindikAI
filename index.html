@@ -1201,9 +1201,22 @@ async function enviar(texto, textoApi, esReintento = false) {
       "\". Usá este contenido si la pregunta se refiere al documento.]\n" +
       pdfAdjunto.texto.slice(0, MAX_PDF_CHARS);
   }
-  const respuesta = await obtenerRespuesta(aEnviar);
-  generando = false;
-  sendBtn.disabled = !input.value.trim();
+  historialMensajes.push({
+  role: "user",
+  content: aEnviar
+});
+
+const respuesta = await obtenerRespuesta(aEnviar);
+
+if (respuesta !== null) {
+  historialMensajes.push({
+    role: "assistant",
+    content: respuesta
+  });
+}
+
+generando = false;
+sendBtn.disabled = !input.value.trim();
 
   if (msgEl && msgEl._stopBtn) {
     msgEl._stopBtn.hidden = true;
