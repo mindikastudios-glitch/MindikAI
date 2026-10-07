@@ -6,11 +6,11 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { mensaje } = req.body || {};
+    const { messages } = req.body || {};
 
-    if (!mensaje || typeof mensaje !== "string") {
+    if (!Array.isArray(messages) || messages.length === 0) {
       return res.status(400).json({
-        error: "Falta el mensaje."
+        error: "No se recibió el historial de conversación."
       });
     }
 
@@ -24,17 +24,7 @@ export default async function handler(req, res) {
         },
         body: JSON.stringify({
           model: "openai/gpt-oss-120b",
-          messages: [
-            {
-              role: "system",
-              content:
-                "Sos MindikAI, una inteligencia artificial creada como proyecto escolar. Respondé de forma clara, útil y natural en español."
-            },
-            {
-              role: "user",
-              content: mensaje
-            }
-          ],
+          messages: messages,
           temperature: 0.7,
           max_tokens: 1000
         })
@@ -70,4 +60,4 @@ export default async function handler(req, res) {
       error: "Error interno al conectar con Groq."
     });
   }
-        }
+}
