@@ -48,8 +48,16 @@ max_tokens: 2000
 
 const data = await groqResponse.json();
 
+console.log("ESTADO GROQ:", groqResponse.status);
+console.log("RESPUESTA GROQ:", JSON.stringify(data));
+
 if (!groqResponse.ok) {
-  console.error("Error de Groq:", groqResponse.status, data);
+console.error("Error de Groq:", groqResponse.status, data);
+
+return res.status(groqResponse.status).json({
+error: data?.error?.message || "Groq rechazó la solicitud."
+});
+}
 
   return res.status(groqResponse.status).json({
     error: data?.error?.message || "Groq rechazó la solicitud."
