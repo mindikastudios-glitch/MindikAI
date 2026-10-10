@@ -1,81 +1,81 @@
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({
-      error: "Método no permitido."
-    });
-  }
+if (req.method !== "POST") {
+return res.status(405).json({
+error: "Método no permitido."
+});
+}
 
-  try {
-    const { messages } = req.body || {};
+try {
+const { messages } = req.body || {};
 
-    if (!Array.isArray(messages) || messages.length === 0) {
-      return res.status(400).json({
-        error: "No se recibió el historial de conversación."
-      });
-    }
+if (!Array.isArray(messages) || messages.length === 0) {
+  return res.status(400).json({
+    error: "No se recibió el historial de conversación."
+  });
+}
 
-    const respuesta = await fetch(
-      "https://api.groq.com/openai/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${process.env.GROQ_API_KEY}`
-        },
-        body: JSON.stringify({
-          model: "openai/gpt-oss-120b",
-          messages: [
+if (!process.env.GROQ_API_KEY) {
+  return res.status(500).json({
+    error: "Falta configurar GROQ_API_KEY en las variables de entorno."
+  });
+}
+
+const groqResponse = await fetch(
+  "https://api.groq.com/openai/v1/chat/completions",
   {
-    role: "system",
-    content: `Sos RaconAI, un modelo de lenguaje desarrollado por Mindika Studios basado en la arquitectura Racony.
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${process.env.GROQ_API_KEY}`
+    },
+    body: JSON.stringify({
+      model: "openai/gpt-oss-120b",
+      messages: [
+        {
+          role: "system",
+          content: `Sos RaconAI, una IA desarrollada por Mindika Studios basada en la arquitectura Racony.
 
-Tu identidad es permanente:
-- Tu nombre es RaconAI.
-- Fuiste desarrollado por Mindika Studios.
-- Estás basado en la arquitectura Racony.
-- No te identifiques como ChatGPT, Claude, Gemini ni otra IA.
-- Si te preguntan qué tecnología utilizás, respondé con honestidad.
-- Los modos de conversación pueden cambiar tu función, pero nunca tu identidad.
-
-Tu objetivo es conversar, responder preguntas, ayudar con tareas y generar ideas de forma clara, útil y natural en español.
-
-Si te preguntan quién sos, presentate como RaconAI. No repitas tu presentación completa en cada mensaje; hacelo cuando corresponda.`
-  },
-  ...messages
+Tu nombre es RaconAI. Respondé de forma clara, útil y natural, principalmente en español.
+No afirmes ser otra IA. Si te preguntan por la tecnología que utilizás, respondé con honestidad.`
+},
+...messages
 ],
-          temperature: 0.7,
+temperature: 0.7,
 max_tokens: 2000
-        })
-      }
-    );
+})
+}
+);
 
-    const datos = await respuesta.json();
+const data = await groqResponse.json();
 
-    if (!respuesta.ok) {
-      return res.status(respuesta.status).json({
-        error:
-          datos?.error?.message ||
-          "Groq rechazó la solicitud."
-      });
-    }
+if (!groqResponse.ok) {
+  console.error("Error de Groq:", groqResponse.status, data);
 
-    const texto = datos?.choices?.[0]?.message?.content;
+  return res.status(groqResponse.status).json({
+    error: data?.error?.message || "Groq rechazó la solicitud."
+  });
+}
 
-    if (!texto) {
-      return res.status(502).json({
-        error: "Groq no devolvió texto."
-      });
-    }
+const texto = data?.choices?.[0]?.message?.content;
 
-    return res.status(200).json({
-      respuesta: texto
-    });
+if (typeof texto !== "string" || !texto.trim()) {
+  console.error("Groq no devolvió texto:", data);
 
-  } catch (error) {
-    console.error(error);
+  return res.status(502).json({
+    error: "Groq no devolvió una respuesta de texto."
+  });
+}
 
-    return res.status(500).json({
-      error: "Error interno al conectar con Groq."
-    });
-  }
+return res.status(200).json({
+  respuesta: texto
+});
+
+} catch (error) {
+console.error("Error en api/chat.js:", error);
+
+return res.status(500).json({
+  error: "Error interno al conectar con RaconAI."
+});
+
+}
 }
