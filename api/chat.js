@@ -7,6 +7,8 @@ module.exports = async function handler(req, res) {
 
   try {
     const { messages } = req.body || {};
+    console.log("BODY RECIBIDO:", JSON.stringify(req.body));
+console.log("MESSAGES RECIBIDOS:", JSON.stringify(req.body?.messages));
 
     if (!Array.isArray(messages) || messages.length === 0) {
       return res.status(400).json({
