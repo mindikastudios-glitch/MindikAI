@@ -45,6 +45,7 @@ Si te preguntan quién sos, presentate como RaconAI. No repitas tu presentación
 ],
           temperature: 0.7,
 max_tokens: 2000,
+tool_choice: "auto",
 tools: [
   { type: "browser_search" }
 ]
